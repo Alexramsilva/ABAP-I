@@ -164,13 +164,10 @@ elif menu == "Módulo de Pólizas":
     st.write("### Pólizas Registradas")
     st.dataframe(st.session_state['polizas'])
 
-    ##
-    # if col3.button("Eliminar", key=f"{row['Folio']}_{idx}"):  # Combinamos 'Folio' con 'idx' para hacerlo único
-    #            st.session_state['polizas'] = st.session_state['polizas'].drop(idx)
-    #            st.success(f"Póliza {row['Folio']} eliminada correctamente")
-
+##
     if st.button("Eliminar pólizas"):
-        st.session_state['polizas'] = st.session_state['polizas'].drop(idx)
+        idx = st.session_state['polizas'][st.session_state['polizas']['Folio'] == folio_a_eliminar].index
+        st.session_state['polizas'] = st.session_state['polizas'].drop(idx[0])
         st.warning("Se eliminó la póliza.")
 
 # Consultas: Auxiliares y Balanzas
