@@ -66,6 +66,11 @@ def mostrar_estado_resultados():
     ingresos_sum = st.session_state['polizas'][st.session_state['polizas']['Cuenta'].isin(ingresos)].agg({'Debe': 'sum', 'Haber': 'sum'})
     gastos_sum = st.session_state['polizas'][st.session_state['polizas']['Cuenta'].isin(gastos)].agg({'Debe': 'sum', 'Haber': 'sum'})
 
+    # Verificar si se encontraron datos
+    if ingresos_sum.empty or gastos_sum.empty:
+        st.warning("No se encontraron ingresos o gastos en las pólizas registradas.")
+        return
+
     # Calcular el estado de resultados
     ingresos_totales = ingresos_sum['Haber'] - ingresos_sum['Debe']
     gastos_totales = gastos_sum['Debe'] - gastos_sum['Haber']
@@ -91,6 +96,11 @@ def mostrar_balance_general():
     activos_sum = st.session_state['polizas'][st.session_state['polizas']['Cuenta'].isin(activos)].agg({'Debe': 'sum', 'Haber': 'sum'})
     pasivos_sum = st.session_state['polizas'][st.session_state['polizas']['Cuenta'].isin(pasivos)].agg({'Debe': 'sum', 'Haber': 'sum'})
     capital_sum = st.session_state['polizas'][st.session_state['polizas']['Cuenta'].isin(capital)].agg({'Debe': 'sum', 'Haber': 'sum'})
+
+    # Verificar si se encontraron datos
+    if activos_sum.empty or pasivos_sum.empty or capital_sum.empty:
+        st.warning("No se encontraron datos para las cuentas de activos, pasivos o capital.")
+        return
 
     # Calcular el balance
     total_activos = activos_sum['Debe'] - activos_sum['Haber']
@@ -203,15 +213,10 @@ elif menu == "Balance General":
 
 # Configuración
 elif menu == "Configuración":
-    st.title("Configuración del Sistema")
-
-    empresa = st.text_input("Nombre de la Empresa", st.session_state['configuracion']['Empresa'])
-    rfc = st.text_input("RFC", st.session_state['configuracion']['RFC'])
-
-    if st.button("Guardar Configuración"):
-        st.session_state['configuracion']['Empresa'] = empresa
-        st.session_state['configuracion']['RFC con homoclave SAT'] = rfc
-        st.success("Configuración guardada correctamente")
-
-    st.write("### Configuración Actual")
-    st.json(st.session_state['configuracion'])
+    st.title("Configuración de la Empresa")
+    st.write(f"Empresa: {st.session_state['configuracion']['Empresa']}")
+    st.write(f"RFC: {st.session_state['configuracion']['RFC']}")
+    if st.button("Actualizar Configuración"):
+        st.session_state['configuracion']['Empresa'] = st.text_input("Nuevo nombre de la empresa", value=st.session_state['configuracion']['Empresa'])
+        st.session_state['configuracion']['RFC'] = st.text_input("Nuevo RFC", value=st.session_state['configuracion']['RFC'])
+        st.success("Configuración actualizada.")
