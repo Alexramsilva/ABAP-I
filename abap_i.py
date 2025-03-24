@@ -163,12 +163,55 @@ elif menu == "Módulo de Pólizas":
 
     st.write("### Pólizas Registradas")
     st.dataframe(st.session_state['polizas'])
-
 ##
-    if st.button("Eliminar pólizas"):
-        idx = st.session_state['polizas'][st.session_state['polizas']['Folio'] == folio_a_eliminar].index
-        st.session_state['polizas'] = st.session_state['polizas'].drop(idx[0])
-        st.warning("Se eliminó la póliza.")
+elif menu == "Módulo de Pólizas":
+    st.title("Módulo de Pólizas")
+
+    # Formulario para agregar una nueva póliza
+    with st.form("Alta de Póliza"):
+        folio = st.text_input("Folio")
+        fecha = st.date_input("Fecha")
+        concepto = st.text_input("Concepto")
+        st.write("### Movimientos")
+
+        movimientos = []
+        for i in range(3):
+            col1, col2, col3 = st.columns(3)
+            cuenta = col1.selectbox(f"Cuenta {i+1}", st.session_state['catalogo_cuentas']['Código'].tolist(), index=None, placeholder="Selecciona una cuenta")
+            debe = col2.number_input(f"Debe {i+1}", min_value=0.0, format="%.2f")
+            haber = col3.number_input(f"Haber {i+1}", min_value=0.0, format="%.2f")
+            movimientos.append((cuenta, debe, haber))
+
+        submit = st.form_submit_button("Agregar Póliza")
+
+        if submit:
+            for cuenta, debe, haber in movimientos:
+                if cuenta and (debe > 0 or haber > 0):
+                    nueva_linea = pd.DataFrame([[folio, fecha, concepto, cuenta, debe, haber]],
+                                               columns=['Folio', 'Fecha', 'Concepto', 'Cuenta', 'Debe', 'Haber'])
+                    st.session_state['polizas'] = pd.concat([st.session_state['polizas'], nueva_linea], ignore_index=True)
+            st.success("Póliza registrada correctamente")
+
+    # Mostrar las pólizas registradas
+    st.write("### Pólizas Registradas")
+    if not st.session_state['polizas'].empty:
+        st.dataframe(st.session_state['polizas'])
+
+        # Selección de una póliza para eliminar
+        folio_a_eliminar = st.selectbox("Selecciona la póliza a eliminar", st.session_state['polizas']['Folio'].tolist())
+
+        # Botón para eliminar la póliza seleccionada
+        if st.button("Eliminar póliza"):
+            # Buscar el índice de la póliza seleccionada
+            idx = st.session_state['polizas'][st.session_state['polizas']['Folio'] == folio_a_eliminar].index
+            if not idx.empty:
+                # Eliminar la póliza seleccionada
+                st.session_state['polizas'] = st.session_state['polizas'].drop(idx[0])
+                st.warning("Se eliminó la póliza.")
+            else:
+                st.warning("No se encontró la póliza seleccionada.")
+    else:
+        st.warning("No hay pólizas registradas.")
 
 # Consultas: Auxiliares y Balanzas
 elif menu == "Consultas (Auxiliares y Balanzas)":
