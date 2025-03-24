@@ -34,26 +34,8 @@ menu = st.sidebar.selectbox("Menú", [
     "Configuración"
 ])
 
-# Función para mostrar balances (balanza de comprobación)
-def mostrar_balanza():
-    if st.session_state['polizas'].empty:
-        st.warning("No hay movimientos registrados.")
-        return
-    balanza = st.session_state['polizas'].groupby('Cuenta').agg({'Debe': 'sum', 'Haber': 'sum'}).reset_index()
-
-    # Mostrar la balanza
-    st.dataframe(balanza)
-
-    # Mostrar las sumas finales de debe y haber
-    total_debe = balanza['Debe'].sum()
-    total_haber = balanza['Haber'].sum()
-
-    st.write("### Totales")
-    st.write(f"Total Debe: {total_debe:.2f}")
-    st.write(f"Total Haber: {total_haber:.2f}")
-
 # Módulo de Pólizas
-elif menu == "Módulo de Pólizas":
+if menu == "Módulo de Pólizas":
     st.title("Módulo de Pólizas")
 
     with st.form("Alta de Póliza"):
@@ -83,12 +65,13 @@ elif menu == "Módulo de Pólizas":
     st.write("### Pólizas Registradas")
     if not st.session_state['polizas'].empty:
         for index, row in st.session_state['polizas'].iterrows():
-            with st.expander(f"Folio: {row['Folio']} - {row['Concepto']}"):
-                st.write(f"Fecha: {row['Fecha']}")
-                st.write(f"Cuenta: {row['Cuenta']}")
-                st.write(f"Debe: {row['Debe']:.2f}, Haber: {row['Haber']:.2f}")
-                if st.button(f"Eliminar Póliza {row['Folio']}", key=f"delete_{index}"):
-                    st.session_state['polizas'] = st.session_state['polizas'].drop(index).reset_index(drop=True)
+            with st.expander(f"Folio: {row['Folio']} - {row['Fecha']}"):
+                st.write(f"**Concepto:** {row['Concepto']}")
+                st.write(f"**Cuenta:** {row['Cuenta']}")
+                st.write(f"**Debe:** {row['Debe']:.2f}, **Haber:** {row['Haber']:.2f}")
+                if st.button(f"Eliminar Póliza {row['Folio']}", key=f"del_{index}"):
+                    st.session_state['polizas'].drop(index, inplace=True)
+                    st.session_state['polizas'].reset_index(drop=True, inplace=True)
                     st.experimental_rerun()
     else:
         st.write("No hay pólizas registradas.")
