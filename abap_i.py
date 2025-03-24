@@ -7,6 +7,52 @@ Original file is located at
     https://colab.research.google.com/drive/1NBmNSNM5_4DQe-6oFaiK8zMQcqCVAMgh
 """
 
+import streamlit as st
+import pandas as pd
+
+# Datos iniciales (en memoria - podrías guardarlos en un CSV/SQLite para persistencia)
+if 'catalogo_cuentas' not in st.session_state:
+    st.session_state['catalogo_cuentas'] = pd.DataFrame(columns=['Código', 'Nombre', 'Tipo'])
+
+if 'polizas' not in st.session_state:
+    st.session_state['polizas'] = pd.DataFrame(columns=['Folio', 'Fecha', 'Concepto', 'Cuenta', 'Debe', 'Haber'])
+
+if 'configuracion' not in st.session_state:
+    st.session_state['configuracion'] = {
+        "Empresa": "Mi Empresa S.A. de C.V.",
+        "RFC": "XAXX010101000"
+    }
+
+# Menú lateral
+menu = st.sidebar.selectbox("Menú", [
+    "Inicio",
+    "Catálogo de Cuentas",
+    "Módulo de Pólizas",
+    "Consultas (Auxiliares y Balanzas)",
+    "Estado de Resultados",
+    "Balance General",
+    "Configuración"
+])
+
+# Función para mostrar balances (balanza de comprobación)
+def mostrar_balanza():
+    if st.session_state['polizas'].empty:
+        st.warning("No hay movimientos registrados.")
+        return
+    balanza = st.session_state['polizas'].groupby('Cuenta').agg({'Debe': 'sum', 'Haber': 'sum'}).reset_index()
+
+    # Mostrar la balanza
+    st.dataframe(balanza)
+
+    # Mostrar las sumas finales de debe y haber
+    total_debe = balanza['Debe'].sum()
+    total_haber = balanza['Haber'].sum()
+
+    st.write("### Totales")
+    st.write(f"Total Debe: {total_debe:.2f}")
+    st.write(f"Total Haber: {total_haber:.2f}")
+
+# Módulo de Pólizas
 elif menu == "Módulo de Pólizas":
     st.title("Módulo de Pólizas")
 
@@ -14,8 +60,8 @@ elif menu == "Módulo de Pólizas":
         folio = st.text_input("Folio")
         fecha = st.date_input("Fecha")
         concepto = st.text_input("Concepto")
-
         st.write("### Movimientos")
+
         movimientos = []
         for i in range(3):
             col1, col2, col3 = st.columns(3)
@@ -36,10 +82,17 @@ elif menu == "Módulo de Pólizas":
 
     st.write("### Pólizas Registradas")
     if not st.session_state['polizas'].empty:
-        for folio in st.session_state['polizas']['Folio'].unique():
-            st.write(f"#### Póliza {folio}")
-            df_folio = st.session_state['polizas'][st.session_state['polizas']['Folio'] == folio]
-            st.dataframe(df_folio)
-            if st.button(f"Eliminar Póliza {folio}", key=folio):
-                st.session_state['polizas'] = st.session_state['polizas'][st.session_state['polizas']['Folio'] != folio]
-                st.experimental_rerun()
+        for index, row in st.session_state['polizas'].iterrows():
+            with st.expander(f"Folio: {row['Folio']} - {row['Concepto']}"):
+                st.write(f"Fecha: {row['Fecha']}")
+                st.write(f"Cuenta: {row['Cuenta']}")
+                st.write(f"Debe: {row['Debe']:.2f}, Haber: {row['Haber']:.2f}")
+                if st.button(f"Eliminar Póliza {row['Folio']}", key=f"delete_{index}"):
+                    st.session_state['polizas'] = st.session_state['polizas'].drop(index).reset_index(drop=True)
+                    st.experimental_rerun()
+    else:
+        st.write("No hay pólizas registradas.")
+
+    if st.button("Eliminar todas las pólizas"):
+        st.session_state['polizas'] = pd.DataFrame(columns=['Folio', 'Fecha', 'Concepto', 'Cuenta', 'Debe', 'Haber'])
+        st.warning("Se eliminaron todas las pólizas.")
