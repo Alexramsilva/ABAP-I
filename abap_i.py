@@ -133,37 +133,6 @@ elif menu == "Catálogo de Cuentas":
         st.session_state['catalogo_cuentas'] = pd.DataFrame(columns=['Código', 'Nombre', 'Tipo'])
         st.warning("Se eliminaron todas las cuentas.")
 
-# Módulo de Pólizas
-elif menu == "Módulo de Pólizas":
-    st.title("Módulo de Pólizas")
-
-    with st.form("Alta de Póliza"):
-        folio = st.text_input("Folio")
-        fecha = st.date_input("Fecha")
-        concepto = st.text_input("Concepto")
-        st.write("### Movimientos")
-
-        movimientos = []
-        for i in range(3):
-            col1, col2, col3 = st.columns(3)
-            cuenta = col1.selectbox(f"Cuenta {i+1}", st.session_state['catalogo_cuentas']['Código'].tolist(), index=None, placeholder="Selecciona una cuenta")
-            debe = col2.number_input(f"Debe {i+1}", min_value=0.0, format="%.2f")
-            haber = col3.number_input(f"Haber {i+1}", min_value=0.0, format="%.2f")
-            movimientos.append((cuenta, debe, haber))
-
-        submit = st.form_submit_button("Agregar Póliza")
-
-        if submit:
-            for cuenta, debe, haber in movimientos:
-                if cuenta and (debe > 0 or haber > 0):
-                    nueva_linea = pd.DataFrame([[folio, fecha, concepto, cuenta, debe, haber]],
-                                               columns=['Folio', 'Fecha', 'Concepto', 'Cuenta', 'Debe', 'Haber'])
-                    st.session_state['polizas'] = pd.concat([st.session_state['polizas'], nueva_linea], ignore_index=True)
-            st.success("Póliza registrada correctamente")
-
-    st.write("### Pólizas Registradas")
-    st.dataframe(st.session_state['polizas'])
-##
 elif menu == "Módulo de Pólizas":
     st.title("Módulo de Pólizas")
 
