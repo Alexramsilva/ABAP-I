@@ -110,7 +110,6 @@ if menu == "Inicio":
     st.title("Sistema Contable de Información Financiera")
     st.write("Bienvenido al Sistema Contable para la UCA de Sistemas Contables de Información Financiera.")
 
-
 # Catálogo de cuentas
 elif menu == "Catálogo de Cuentas":
     st.title("Catálogo de Cuentas")
@@ -122,9 +121,12 @@ elif menu == "Catálogo de Cuentas":
         submit = st.form_submit_button("Agregar Cuenta")
 
         if submit:
-            nueva_cuenta = pd.DataFrame([[codigo, nombre, tipo]], columns=['Código', 'Nombre', 'Tipo'])
-            st.session_state['catalogo_cuentas'] = pd.concat([st.session_state['catalogo_cuentas'], nueva_cuenta], ignore_index=True)
-            st.success("Cuenta agregada correctamente")
+            if codigo and nombre:  # Verificación para evitar datos vacíos
+                nueva_cuenta = pd.DataFrame([[codigo, nombre, tipo]], columns=['Código', 'Nombre', 'Tipo'])
+                st.session_state['catalogo_cuentas'] = pd.concat([st.session_state['catalogo_cuentas'], nueva_cuenta], ignore_index=True)
+                st.success("Cuenta agregada correctamente")
+            else:
+                st.error("El código y nombre de la cuenta son obligatorios.")
 
     st.write("### Catálogo Actual")
     st.dataframe(st.session_state['catalogo_cuentas'])
@@ -209,7 +211,7 @@ elif menu == "Configuración":
 
     if st.button("Guardar Configuración"):
         st.session_state['configuracion']['Empresa'] = empresa
-        st.session_state['configuracion']['RFC con homoclave SAT'] = rfc
+        st.session_state['configuracion']['RFC'] = rfc
         st.success("Configuración guardada correctamente")
 
     st.write("### Configuración Actual")
