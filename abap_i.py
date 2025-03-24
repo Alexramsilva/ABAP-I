@@ -121,12 +121,9 @@ elif menu == "Catálogo de Cuentas":
         submit = st.form_submit_button("Agregar Cuenta")
 
         if submit:
-            if codigo and nombre:  # Verificación para evitar datos vacíos
-                nueva_cuenta = pd.DataFrame([[codigo, nombre, tipo]], columns=['Código', 'Nombre', 'Tipo'])
-                st.session_state['catalogo_cuentas'] = pd.concat([st.session_state['catalogo_cuentas'], nueva_cuenta], ignore_index=True)
-                st.success("Cuenta agregada correctamente")
-            else:
-                st.error("El código y nombre de la cuenta son obligatorios.")
+            nueva_cuenta = pd.DataFrame([[codigo, nombre, tipo]], columns=['Código', 'Nombre', 'Tipo'])
+            st.session_state['catalogo_cuentas'] = pd.concat([st.session_state['catalogo_cuentas'], nueva_cuenta], ignore_index=True)
+            st.success("Cuenta agregada correctamente")
 
     st.write("### Catálogo Actual")
     st.dataframe(st.session_state['catalogo_cuentas'])
@@ -169,7 +166,9 @@ elif menu == "Módulo de Pólizas":
             col1, col2, col3 = st.columns([3, 1, 1])
             col1.write(f"{row['Folio']} - {row['Fecha']} - {row['Concepto']}")
             col2.write(f"{row['Debe']:.2f} / {row['Haber']:.2f}")
-            if col3.button("Eliminar", key=row['Folio']):
+
+            # Asegurarse de que el key del botón sea único
+            if col3.button("Eliminar", key=f"{row['Folio']}_{idx}"):  # Combinamos 'Folio' con 'idx' para hacerlo único
                 st.session_state['polizas'] = st.session_state['polizas'].drop(idx)
                 st.success(f"Póliza {row['Folio']} eliminada correctamente")
                 break
@@ -211,7 +210,7 @@ elif menu == "Configuración":
 
     if st.button("Guardar Configuración"):
         st.session_state['configuracion']['Empresa'] = empresa
-        st.session_state['configuracion']['RFC'] = rfc
+        st.session_state['configuracion']['RFC con homoclave SAT'] = rfc
         st.success("Configuración guardada correctamente")
 
     st.write("### Configuración Actual")
